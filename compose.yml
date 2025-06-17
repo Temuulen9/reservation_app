@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      MONGODB_URI: mongodb+srv://memigodev:memigodev@reservation-dev.qnotvvy.mongodb.net/?retryWrites=true&w=majority&appName=reservation-dev
+    depends_on:
+      - mongo_db
+
+  mongo_db:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

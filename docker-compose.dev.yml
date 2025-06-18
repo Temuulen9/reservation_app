@@ -18,6 +18,20 @@ services:
           ignore:
             - node_modules
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000" # ← Next.js runs on port 3000 *inside*, mapped to 3001 *outside*
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules
+
   mongo:
     image: mongo:6
     ports:

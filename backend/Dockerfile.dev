@@ -1,0 +1,14 @@
+# Dockerfile.dev
+FROM node:22
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# Optional: install ts-node-dev globally
+RUN npm install
+
+CMD ["npm", "run", "start:dev"]

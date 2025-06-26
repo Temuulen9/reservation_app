@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseLoggerService } from './mongoose-logger.service';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { MongooseLoggerService } from './mongoose-logger.service';
     MongooseModule.forRoot(process.env.MONGO_URI ?? '', {
       dbName: 'sample_mflix',
     }),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService, MongooseLoggerService],

@@ -22,7 +22,6 @@ export class OperationGuard implements CanActivate {
     if (!operationCode) return true; // No operation required
 
     const request = context.switchToHttp().getRequest();
-
     const user = request.user;
 
     if (!user) throw new ForbiddenException("No user in request");

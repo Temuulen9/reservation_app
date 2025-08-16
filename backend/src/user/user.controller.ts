@@ -1,42 +1,33 @@
-// src/user/user.controller.ts
 import {
+  Body,
   Controller,
   Get,
+  HttpCode,
   Post,
-  Body,
-  Param,
-  Put,
-  Delete,
+  Req,
+  UseGuards,
 } from "@nestjs/common";
+import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
+import { OperationCode } from "src/common/decorators/operation-code.decorator";
+import { OperationCodeEnum } from "src/common/enums/operation.code.enum";
+import { OperationGuard } from "src/common/guards/operation.guard";
 import { UserService } from "./user.service";
-import { User } from "./schemas/user.schema";
 
-@Controller("users")
+@Controller("user")
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private userService: UserService) {}
 
-  @Post()
-  create(@Body() user: Partial<User>) {
-    return this.userService.create(user);
+  @UseGuards(JwtAuthGuard, OperationGuard)
+  @OperationCode(OperationCodeEnum.GET_USERS)
+  @Get("")
+  getUsers() {
+    return this.userService.getUsers();
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.userService.findOne(id);
-  }
-
-  @Put(":id")
-  update(@Param("id") id: string, @Body() user: Partial<User>) {
-    return this.userService.update(id, user);
-  }
-
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.userService.remove(id);
+  @UseGuards(JwtAuthGuard, OperationGuard)
+  @OperationCode(OperationCodeEnum.UPDATE_USER_ROLE)
+  @Post("update-role")
+  async updateUserRole(@Body() body: { userId: number; roleId: number }) {
+    return this.userService.updateUserRole(body.userId, body.roleId);
   }
 }

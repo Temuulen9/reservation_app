@@ -9,7 +9,7 @@ import { LoginDto } from "./dto/login.dto";
 // const bcrypt = require('bcrypt');
 import * as bcrypt from "bcrypt";
 import { InjectModel } from "@nestjs/mongoose";
-import { User, UserDocument } from "src/users/schemas/user.schema";
+import { User, UserDocument } from "src/user/schemas/user.schema";
 import { Model } from "mongoose";
 
 @Injectable()

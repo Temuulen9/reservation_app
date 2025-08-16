@@ -8,30 +8,30 @@ import {
   HttpCode,
 } from "@nestjs/common";
 import { OperationService } from "./operation.service";
-// import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
 import { OperationGuard } from "src/common/guards/operation.guard";
 import { OperationCode } from "src/common/decorators/operation-code.decorator";
 import { OperationCodeEnum } from "src/common/enums/operation.code.enum";
 
-@Controller("api/operations")
+@Controller("operation")
 export class OperationController {
   constructor(private operationService: OperationService) {}
 
-  @UseGuards(OperationGuard)
+  @UseGuards(JwtAuthGuard, OperationGuard)
   @OperationCode(OperationCodeEnum.GET_OPERATIONS)
   @Get("")
   getOperations() {
     return this.operationService.getOperations();
   }
 
-  @UseGuards(OperationGuard)
+  @UseGuards(JwtAuthGuard, OperationGuard)
   @OperationCode(OperationCodeEnum.GET_OPERATIONS)
   @Get("sync")
   syncOperations() {
     return this.operationService.syncOperations();
   }
 
-  @UseGuards(OperationGuard)
+  @UseGuards(JwtAuthGuard, OperationGuard)
   @OperationCode(OperationCodeEnum.CREATE_OPERATION)
   @Post("create")
   createOperation(
@@ -44,7 +44,7 @@ export class OperationController {
     });
   }
 
-  @UseGuards(OperationGuard)
+  @UseGuards(JwtAuthGuard, OperationGuard)
   @OperationCode(OperationCodeEnum.EDIT_OPERATION)
   @Post("edit")
   editOperation(
@@ -57,7 +57,7 @@ export class OperationController {
     });
   }
 
-  @UseGuards(OperationGuard)
+  @UseGuards(JwtAuthGuard, OperationGuard)
   @OperationCode(OperationCodeEnum.DELETE_OPERATION)
   @Post("delete")
   @HttpCode(200)

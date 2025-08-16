@@ -7,11 +7,11 @@ import { MongooseLoggerService } from "./mongoose-logger.service";
 import { AuthController } from "./auth/auth.controller";
 import { AuthService } from "./auth/auth.service";
 import { AuthModule } from "./auth/auth.module";
-import { RolesModule } from "./roles/roles.module";
-import { UsersModule } from "./users/users.module";
-import { OperationsModule } from "./operations/operations.module";
+import { RolesModule } from "./role/role.module";
+import { UsersModule } from "./user/user.module";
+import { OperationModule } from "./operation/operation.module";
 import { SharedModule } from "./shared/shared.module";
-import { UsersService } from "./users/users.service";
+import { UserService } from "./user/user.service";
 
 @Module({
   imports: [
@@ -24,10 +24,10 @@ import { UsersService } from "./users/users.service";
     AuthModule,
     UsersModule,
     RolesModule,
-    OperationsModule,
+    OperationModule,
     SharedModule,
   ],
-  controllers: [AppController, AuthController],
-  providers: [AppService, AuthService, MongooseLoggerService, UsersService],
+  controllers: [AppController],
+  providers: [AppService, AuthService, MongooseLoggerService, UserService],
 })
 export class AppModule {}

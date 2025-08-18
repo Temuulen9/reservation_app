@@ -25,14 +25,14 @@ export class OperationController {
   }
 
   @UseGuards(JwtAuthGuard, OperationGuard)
-  @OperationCode(OperationCodeEnum.GET_OPERATIONS)
+  // @OperationCode(OperationCodeEnum.GET_OPERATIONS)
   @Get("sync")
   syncOperations() {
     return this.operationService.syncOperations();
   }
 
   @UseGuards(JwtAuthGuard, OperationGuard)
-  @OperationCode(OperationCodeEnum.CREATE_OPERATION)
+  // @OperationCode(OperationCodeEnum.CREATE_OPERATION)
   @Post("create")
   createOperation(
     @Body() body: { name: string; code: string; description: string }

@@ -13,6 +13,7 @@ import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
 import { OperationGuard } from "src/common/guards/operation.guard";
 import { OperationCode } from "src/common/decorators/operation-code.decorator";
 import { OperationCodeEnum } from "src/common/enums/operation.code.enum";
+import { AddOperationsDto } from "./dto/add-operations.dto";
 
 @Controller("role")
 export class RoleController {
@@ -26,12 +27,13 @@ export class RoleController {
   }
 
   @UseGuards(JwtAuthGuard, OperationGuard)
-  @OperationCode(OperationCodeEnum.CREATE_ROLE)
+  // @OperationCode(OperationCodeEnum.CREATE_ROLE)
   @Post("create")
-  createRole(@Body() body: { name: string; roleId: number }) {
+  createRole(@Body() body: { name: string; roleId: number; desc: string }) {
     return this.roleService.createRole({
       name: body.name,
       roleId: body.roleId,
+      desc: body.desc,
     });
   }
 
@@ -52,11 +54,11 @@ export class RoleController {
   }
 
   @UseGuards(JwtAuthGuard, OperationGuard)
-  @OperationCode(OperationCodeEnum.ADD_OPERATION_TO_ROLE)
+  // @OperationCode(OperationCodeEnum.ADD_OPERATION_TO_ROLE)
   @HttpCode(200)
-  @Post("add-operation")
-  addOperationToRole(@Body() dto: CreateOperationDto) {
-    return this.roleService.addOperationToRole(dto);
+  @Post("add-operations")
+  addOperationToRole(@Body() dto: AddOperationsDto) {
+    return this.roleService.addOperationsToRole(dto);
   }
 
   @UseGuards(JwtAuthGuard, OperationGuard)

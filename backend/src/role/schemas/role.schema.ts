@@ -1,19 +1,9 @@
 // cats/schemas/cat.schema.ts
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
+import { OperationDocument } from "src/operation/schemas/operation.schema";
 
 export type RoleDocument = Role & Document;
-
-@Schema()
-export class Operation {
-  @Prop({ required: true })
-  code: string;
-
-  @Prop()
-  description?: string;
-}
-
-export const OperationSchema = SchemaFactory.createForClass(Operation);
 
 @Schema()
 export class Role {
@@ -24,10 +14,10 @@ export class Role {
   name: string;
 
   @Prop()
-  desc: number;
+  desc: string;
 
-  @Prop({ type: [OperationSchema], default: [] })
-  operations: Operation[];
+  @Prop({ type: [Types.ObjectId], ref: "Operation", default: [] })
+  operations: Types.ObjectId[] | OperationDocument[];
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);

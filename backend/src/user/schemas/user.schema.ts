@@ -1,6 +1,7 @@
 // cats/schemas/cat.schema.ts
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
+import { RoleDocument } from "src/role/schemas/role.schema";
 
 export type UserDocument = User & Document;
 
@@ -9,10 +10,10 @@ export class User {
   @Prop({ required: true })
   email: string;
 
-  @Prop()
+  @Prop({ required: true })
   firstname: string;
 
-  @Prop()
+  @Prop({ required: true })
   lastname: string;
 
   @Prop()
@@ -26,6 +27,9 @@ export class User {
 
   @Prop()
   roleId: number;
+
+  @Prop({ type: Types.ObjectId, ref: "Role" })
+  role: RoleDocument; // roleId ref
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -8,16 +8,25 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { OPERATION_CODE_KEY } from "../decorators/operation-code.decorator";
+import { InjectModel } from "@nestjs/mongoose";
+import { Role, RoleDocument } from "src/role/schemas/role.schema";
+import { Model } from "mongoose";
+import { RoleService } from "src/role/role.service";
 
 @Injectable()
 export class OperationGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private roleService: RoleService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const operationCode = this.reflector.get<string>(
+    const operationCode = this.reflector.getAllAndOverride<string>(
       OPERATION_CODE_KEY,
-      context.getHandler()
+      [context.getHandler(), context.getClass()]
     );
+
+    console.log("operationCode", operationCode);
 
     if (!operationCode) return true; // No operation required
 
@@ -26,34 +35,13 @@ export class OperationGuard implements CanActivate {
 
     if (!user) throw new ForbiddenException("No user in request");
 
-    // const dbUser = await this.userModel.findOne({
-    //   where: { id: user.id },
-    //   include: {
-    //     role: true,
-    //   },
-    // });
+    console.log("in operation user ", user);
 
-    // /// superadmin can do everything
-    // if (dbUser?.roleId == 1) {
-    //   return true;
-    // }
+    const hasAccess = user.operations?.includes(operationCode);
 
-    // /// user-n role tuhain operation-g duudah erhtei esehiig shalgana
-    // const userRole = await this.roleModel.findOne({
-    //   where: {
-    //     roleId: dbUser?.roleId,
-    //   },
-    // });
-
-    // const allowed = userRole?.operations.findIndex((item) => {
-    //   return item.code == operationCode;
-    // });
-
-    // if (allowed == undefined) {
-    //   throw new ForbiddenException(
-    //     `Access denied to operation: ${operationCode}`
-    //   );
-    // }
+    if (!hasAccess) {
+      throw new ForbiddenException(`Missing permission: ${operationCode}`);
+    }
 
     return true;
   }

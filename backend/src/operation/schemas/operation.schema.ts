@@ -6,14 +6,20 @@ export type OperationDocument = Operation & Document;
 
 @Schema()
 export class Operation {
-  @Prop({ required: true })
-  name: string;
-
-  @Prop()
+  @Prop({ required: true, unique: true })
   code: string;
 
   @Prop()
-  desc: string;
+  description: string;
 }
 
 export const OperationSchema = SchemaFactory.createForClass(Operation);
+
+OperationSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  },
+});

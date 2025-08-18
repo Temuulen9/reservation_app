@@ -6,11 +6,20 @@ import {
 import { CreateOperationDto } from "./dto/create-operation.dto";
 import { Role, RoleDocument } from "./schemas/role.schema";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Model, Types } from "mongoose";
+import {
+  Operation,
+  OperationDocument,
+} from "src/operation/schemas/operation.schema";
+import { AddOperationsDto } from "./dto/add-operations.dto";
 
 @Injectable()
 export class RoleService {
-  constructor(@InjectModel(Role.name) private roleModel: Model<RoleDocument>) {}
+  constructor(
+    @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
+    @InjectModel(Operation.name)
+    private operationModel: Model<OperationDocument>
+  ) {}
 
   async getRoles() {
     const roles = await this.roleModel.find({
@@ -25,7 +34,15 @@ export class RoleService {
     };
   }
 
-  async createRole({ name, roleId }: { name: string; roleId: number }) {
+  async createRole({
+    name,
+    roleId,
+    desc,
+  }: {
+    name: string;
+    roleId: number;
+    desc: string;
+  }) {
     const role = await this.roleModel.findOne({
       name: name,
     });
@@ -37,6 +54,7 @@ export class RoleService {
     const createdRole = await this.roleModel.create({
       roleId,
       name,
+      desc,
     });
 
     return {
@@ -85,51 +103,70 @@ export class RoleService {
 
     return operations;
   }
+  async addOperationsToRole(dto: AddOperationsDto) {
+    const { roleId, operationCodes } = dto;
 
-  async addOperationToRole(dto: CreateOperationDto) {
-    const { roleId, operationCode } = dto;
-
-    const operation = await this.roleModel.findOne({
-      where: { code: operationCode },
-    });
-
-    const roleOperation = await this.roleModel.findOne({
-      where: {
-        id: roleId,
-        RoleOperationLimit: {
-          some: {
-            operationCode,
-          },
-        },
-      },
-    });
-    if (roleOperation) {
-      throw new ConflictException(
-        `"${operationCode}" operation already assigned to the role `
-      );
-    }
-    0;
-    if (!operation) {
-      throw new NotFoundException(
-        `Operation with code "${operationCode}" not found`
-      );
-    }
-
-    const role = await this.roleModel.findOne({
-      where: {
-        id: roleId,
-      },
-    });
-
+    // 1️⃣ Find the role and populate current operations
+    const role = await this.roleModel.findById(roleId).populate("operations");
     if (!role) {
-      throw new NotFoundException(`Role not found`);
+      return {
+        success: false,
+        message: "Role not found",
+        addedOperations: [],
+      };
     }
 
-    return "Successfull";
+    // 2️⃣ Find operations by code
+    const operations = await this.operationModel.find({
+      code: { $in: operationCodes },
+    });
+
+    if (!operations.length) {
+      return {
+        success: false,
+        message: "No operations found",
+        addedOperations: [],
+      };
+    }
+
+    // 3️⃣ Filter out operations already in role
+    const currentOpCodes = role.operations.map((op) => op.code);
+    const missingOperations = operations.filter(
+      (op) => !currentOpCodes.includes(op.code)
+    );
+
+    // 4️⃣ If no new operations, return basic response
+    if (missingOperations.length === 0) {
+      return {
+        success: true,
+        message: "No new operations to add",
+        addedOperations: [],
+      };
+    }
+
+    // 5️⃣ Add missing operations to role
+    const missingOpIds = missingOperations.map(
+      (op) => op._id as Types.ObjectId
+    );
+    role.operations = [
+      ...(role.operations as OperationDocument[]).map(
+        (op) => op._id as Types.ObjectId
+      ),
+      ...missingOpIds,
+    ];
+
+    await role.save();
+
+    // 6️⃣ Return basic response with only new operation codes
+    return {
+      success: true,
+      message: "Successfully added missing operations",
+      addedOperations: missingOperations.map((op) => op.code),
+    };
   }
 
   async editOperationOfRole(dto: CreateOperationDto) {
-    const { roleId, operationCode, maxCallCount } = dto;
+    const { roleId, operationCode } = dto;
 
     const operation = await this.roleModel.findOne({
       where: { code: operationCode },

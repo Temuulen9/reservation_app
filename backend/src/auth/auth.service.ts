@@ -11,18 +11,19 @@ import * as bcrypt from "bcrypt";
 import { InjectModel } from "@nestjs/mongoose";
 import { User, UserDocument } from "src/user/schemas/user.schema";
 import { Model } from "mongoose";
+import { Role, RoleDocument } from "src/role/schemas/role.schema";
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    @InjectModel(User.name) private userModel: Model<UserDocument>
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Role.name) private roleModel: Model<RoleDocument>
   ) {}
 
   async register(dto: RegisterDto) {
     try {
       const hashed = await bcrypt.hash(dto.password, 10);
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
       const user = await this.userModel
         .findOne({
@@ -34,13 +35,16 @@ export class AuthService {
         throw new ConflictException("User already registered");
       }
 
+      const role = await this.roleModel.findOne({ roleId: 4 });
+
       const createdUser = await this.userModel.create({
         email: dto.email,
         firstname: dto.firstname,
         lastname: dto.lastname,
         age: dto.age,
         phonenumber: dto.phonenumber,
-        roleId: 3,
+        roleId: role?.roleId,
+        role: role?._id,
         password: hashed,
       });
 
@@ -60,24 +64,27 @@ export class AuthService {
   }
 
   async emailLogin(dto: LoginDto, headers: any) {
-    const user = await this.userModel.findOne({ email: dto.email });
+    const user = await this.userModel
+      .findOne({ email: dto.email })
+      .populate({ path: "role", populate: { path: "operations" } })
+      .exec();
 
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new UnauthorizedException("Invalid credentials");
     }
+
     const payload = {
       id: user._id,
       email: user.email,
+      role: user.role.name,
+      operations: user.role.operations.map((op) => op?.code),
     };
 
     const token = await this.jwtService.signAsync(payload);
 
     return {
-      success: true,
       accessToken: token,
-      user: {
-        email: user.email,
-      },
+      email: user.email,
     };
   }
 }

@@ -6,9 +6,9 @@ import {
   ExecutionContext,
   CallHandler,
   InternalServerErrorException,
-} from '@nestjs/common';
-import { map, catchError } from 'rxjs/operators';
-import { Observable, throwError } from 'rxjs';
+} from "@nestjs/common";
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError } from "rxjs";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -18,7 +18,7 @@ interface ApiResponse<T> {
 }
 
 @Injectable()
-export class TransformInterceptor implements NestInterceptor {
+export class ResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((data) => {
@@ -34,7 +34,7 @@ export class TransformInterceptor implements NestInterceptor {
       }),
       catchError((error) => {
         // Handle error responses with custom error structure
-        const errorMessage = error.response?.message || 'Internal Server Error';
+        const errorMessage = error.response?.message || "Internal Server Error";
         const errorDetails = error.response?.error || error;
 
         return throwError(() => ({
@@ -42,7 +42,7 @@ export class TransformInterceptor implements NestInterceptor {
           message: errorMessage,
           errorDetails: errorDetails,
         }));
-      }),
+      })
     );
   }
 
@@ -50,12 +50,12 @@ export class TransformInterceptor implements NestInterceptor {
   private cleanNullValues(obj: any): any {
     if (Array.isArray(obj)) {
       return obj.map((item) => this.cleanNullValues(item));
-    } else if (obj !== null && typeof obj === 'object') {
+    } else if (obj !== null && typeof obj === "object") {
       return Object.entries(obj)
         .filter(([_, v]) => v !== null)
         .reduce(
           (acc, [k, v]) => ({ ...acc, [k]: this.cleanNullValues(v) }),
-          {},
+          {}
         );
     }
     return obj;

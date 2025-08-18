@@ -44,9 +44,7 @@ export class OperationService {
     code: string;
     description: string;
   }) {
-    const operation = await this.operationModel.findOne({
-      where: { code },
-    });
+    const operation = await this.operationModel.findOne({ code });
 
     if (operation) {
       throw new BadRequestException(
@@ -55,11 +53,9 @@ export class OperationService {
     }
 
     const operations = await this.operationModel.create({
-      data: {
-        name,
-        code,
-        description,
-      },
+      name,
+      code,
+      description,
     });
     return operations;
   }

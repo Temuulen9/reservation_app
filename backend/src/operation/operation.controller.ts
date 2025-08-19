@@ -26,20 +26,17 @@ export class OperationController {
 
   @UseGuards(JwtAuthGuard, OperationGuard)
   // @OperationCode(OperationCodeEnum.GET_OPERATIONS)
-  @Get("sync")
+  @Post("sync")
   syncOperations() {
     return this.operationService.syncOperations();
   }
 
   @UseGuards(JwtAuthGuard, OperationGuard)
-  // @OperationCode(OperationCodeEnum.CREATE_OPERATION)
+  @OperationCode(OperationCodeEnum.CREATE_OPERATION)
   @Post("create")
-  createOperation(
-    @Body() body: { name: string; code: string; description: string }
-  ) {
+  createOperation(@Body() body: { code: string; description: string }) {
     return this.operationService.createOperation({
       code: body.code,
-      name: body.name,
       description: body.description,
     });
   }
@@ -52,7 +49,6 @@ export class OperationController {
   ) {
     return this.operationService.editOperation({
       code: body.code,
-      name: body.name,
       description: body.description,
     });
   }

@@ -26,16 +26,12 @@ export class OperationGuard implements CanActivate {
       [context.getHandler(), context.getClass()]
     );
 
-    console.log("operationCode", operationCode);
-
     if (!operationCode) return true; // No operation required
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
     if (!user) throw new ForbiddenException("No user in request");
-
-    console.log("in operation user ", user);
 
     const hasAccess = user.operations?.includes(operationCode);
 

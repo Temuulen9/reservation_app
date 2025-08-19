@@ -62,14 +62,6 @@ export class RoleController {
   }
 
   @UseGuards(JwtAuthGuard, OperationGuard)
-  @OperationCode(OperationCodeEnum.EDIT_OPERATION_OF_ROLE)
-  @HttpCode(200)
-  @Post("edit-operation")
-  editOperationOfRole(@Body() dto: CreateOperationDto) {
-    return this.roleService.editOperationOfRole(dto);
-  }
-
-  @UseGuards(JwtAuthGuard, OperationGuard)
   @OperationCode(OperationCodeEnum.DELETE_OPERATION_FROM_ROLE)
   @HttpCode(200)
   @Post("remove-operation")

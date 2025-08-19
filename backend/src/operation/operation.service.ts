@@ -13,34 +13,51 @@ export class OperationService {
 
   async getOperations() {
     const operations = await this.operationModel.find();
-    return operations;
+
+    const cleanOperations = operations.map((op) => op.toJSON());
+
+    return cleanOperations;
   }
 
   async syncOperations() {
-    let operations: any[] = [];
-    for (const operation of Object.values(OperationCodeEnum)) {
-      const newOperation = await this.operationModel.updateOne({
-        where: { code: operation },
-        update: {},
-        create: {
-          name: operation,
-          description: operation,
-          code: operation,
-        },
-      });
+    const operations: {
+      code: OperationCodeEnum;
+      created: boolean;
+      updated: boolean;
+    }[] = [];
 
-      operations.push(newOperation);
+    for (const code of Object.values(OperationCodeEnum)) {
+      const result = await this.operationModel.updateOne(
+        { code }, // filter
+        {
+          $setOnInsert: {
+            name: code,
+            description: code,
+            code: code,
+          },
+        },
+        { upsert: true } // create if not exists
+      );
+
+      if (result.upsertedCount > 0 || result.modifiedCount > 0) {
+        operations.push({
+          code,
+          created: result.upsertedCount > 0,
+          updated: result.modifiedCount > 0,
+        });
+      }
     }
 
-    return operations;
+    return {
+      message: "Operations synced successfully",
+      operations: operations,
+    };
   }
 
   async createOperation({
-    name,
     code,
     description,
   }: {
-    name: string;
     code: string;
     description: string;
   }) {
@@ -53,56 +70,59 @@ export class OperationService {
     }
 
     const operations = await this.operationModel.create({
-      name,
       code,
       description,
     });
-    return operations;
+    return operations.toJSON();
   }
 
   async editOperation({
-    name,
     code,
     description,
   }: {
-    name: string;
     code: string;
     description: string;
   }) {
     const operation = await this.operationModel.findOne({
-      where: { code },
+      code,
     });
 
     if (!operation) {
       throw new BadRequestException(`Operation with code "${code}" not found`);
     }
 
-    const operations = await this.operationModel.updateOne({
-      where: {
+    await this.operationModel.updateOne(
+      {
         code,
       },
-      data: {
-        name,
-        description,
-      },
-    });
-    return operations;
+      {
+        $set: {
+          description,
+        },
+      }
+    );
+    return;
   }
 
   async deleteOperation({ code }: { code: string }) {
     const existing = await this.operationModel.findOne({
-      where: { code },
+      code,
     });
 
     if (!existing) {
       throw new BadRequestException(`Operation with code "${code}" not exists`);
     }
 
-    const operations = await this.operationModel.deleteMany({
-      where: {
-        code,
-      },
+    const result = await this.operationModel.deleteOne({
+      code,
     });
-    return operations;
+
+    if (result.deletedCount === 0) {
+      throw new BadRequestException(
+        `Failed to delete operation with code "${code}"`
+      );
+    }
+
+    return { message: `Operation with code "${code}" deleted successfully` };
   }
 }

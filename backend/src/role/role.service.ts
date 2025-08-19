@@ -22,16 +22,11 @@ export class RoleService {
   ) {}
 
   async getRoles() {
-    const roles = await this.roleModel.find({
-      id: true,
-      name: true,
-    });
-    return {
-      success: true,
-      data: {
-        roles,
-      },
-    };
+    const roles = await this.roleModel.find().populate("operations");
+
+    const cleanRoles = roles.map((op) => op.toJSON());
+
+    return cleanRoles;
   }
 
   async createRole({
@@ -57,19 +52,12 @@ export class RoleService {
       desc,
     });
 
-    return {
-      success: true,
-      data: {
-        createdRole,
-      },
-    };
+    return createdRole.toJSON();
   }
 
   async deleteRole({ name }: { name: string }) {
     const role = await this.roleModel.findOne({
-      where: {
-        name: name,
-      },
+      name,
     });
 
     if (!role) {
@@ -77,31 +65,26 @@ export class RoleService {
     }
 
     const deletedRole = await this.roleModel.deleteOne({
-      where: {
-        name: name,
-      },
+      name,
     });
-    return deletedRole;
+
+    return;
   }
 
   async getOperationsOfRole({ roleId }: { roleId: number }) {
-    const role = await this.roleModel.findOne({
-      where: {
-        id: roleId,
-      },
-    });
+    const role = await this.roleModel
+      .findOne({
+        roleId,
+      })
+      .populate("operations");
 
     if (!role) {
       throw new NotFoundException(`Role not found`);
     }
 
-    const operations = await this.roleModel.find({
-      where: {
-        id: role?.id,
-      },
-    });
+    const cleanOperations = role.operations.map((op) => op.toJSON());
 
-    return operations;
+    return cleanOperations;
   }
   async addOperationsToRole(dto: AddOperationsDto) {
     const { roleId, operationCodes } = dto;
@@ -165,56 +148,11 @@ export class RoleService {
     };
   }
 
-  async editOperationOfRole(dto: CreateOperationDto) {
-    const { roleId, operationCode } = dto;
-
-    const operation = await this.roleModel.findOne({
-      where: { code: operationCode },
-    });
-
-    if (!operation) {
-      throw new NotFoundException(
-        `Operation with code "${operationCode}" not found`
-      );
-    }
-
-    const role = await this.roleModel.findOne({
-      where: {
-        id: roleId,
-      },
-    });
-
-    if (!role) {
-      throw new NotFoundException(`Role not found`);
-    }
-
-    // const updatedRole = await this.roleModel.update({
-    //   where: {
-    //     roleId_operationCode: {
-    //       roleId,
-    //       operationCode,
-    //     },
-    //   },
-    //   update: {
-    //     roleId,
-    //     operationCode,
-    //     callCount: maxCallCount,
-    //   },
-    //   create: {
-    //     roleId,
-    //     operationCode,
-    //     callCount: maxCallCount,
-    //   },
-    // });
-
-    // return updatedRole;
-  }
-
   async removeOperationFromRole(dto: CreateOperationDto) {
     const { roleId, operationCode } = dto;
 
-    const operation = await this.roleModel.findOne({
-      where: { code: operationCode },
+    const operation = await this.operationModel.findOne({
+      code: operationCode,
     });
 
     if (!operation) {
@@ -223,20 +161,17 @@ export class RoleService {
       );
     }
 
-    const role = await this.roleModel.findOne({
-      where: {
-        id: roleId,
-      },
-    });
+    const result = await this.roleModel.updateOne(
+      { roleId },
+      { $pull: { operations: operation._id } }
+    );
 
-    if (!role) {
-      throw new NotFoundException(`Role not found`);
+    if (result.matchedCount === 0) {
+      throw new NotFoundException(`Role with id "${roleId}" not found`);
     }
 
-    const updatedRole = await this.roleModel.deleteOne({
-      where: { id: roleId },
-    });
-
-    return updatedRole;
+    return {
+      message: `Operation "${operationCode}" removed from role successfully`,
+    };
   }
 }

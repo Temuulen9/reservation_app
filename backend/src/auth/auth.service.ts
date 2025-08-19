@@ -22,41 +22,32 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    try {
-      const hashed = await bcrypt.hash(dto.password, 10);
+    const hashed = await bcrypt.hash(dto.password, 10);
 
-      const user = await this.userModel
-        .findOne({
-          email: dto.email,
-        })
-        .exec();
-
-      if (user) {
-        throw new ConflictException("User already registered");
-      }
-
-      const role = await this.roleModel.findOne({ roleId: 4 });
-
-      const createdUser = await this.userModel.create({
+    const user = await this.userModel
+      .findOne({
         email: dto.email,
-        firstname: dto.firstname,
-        lastname: dto.lastname,
-        age: dto.age,
-        phonenumber: dto.phonenumber,
-        roleId: role?.roleId,
-        role: role?._id,
-        password: hashed,
-      });
+      })
+      .exec();
 
-      const { password, ...result } = createdUser.toObject();
-
-      return {
-        success: true,
-        data: result,
-      };
-    } catch (e) {
-      return e;
+    if (user) {
+      throw new ConflictException("User already registered");
     }
+
+    const roleUser = await this.roleModel.findOne({ name: "user" });
+
+    const createdUser = await this.userModel.create({
+      email: dto.email,
+      firstname: dto.firstname,
+      lastname: dto.lastname,
+      age: dto.age,
+      phonenumber: dto.phonenumber,
+      roleId: roleUser?.roleId,
+      role: roleUser?._id,
+      password: hashed,
+    });
+
+    return;
   }
 
   async verifyOtp(email: string, otp: string) {

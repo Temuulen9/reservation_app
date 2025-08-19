@@ -47,15 +47,6 @@ async function seed() {
       code: OperationCodeEnum.UPDATE_USER_ROLE,
       description: "Update user role",
     },
-    {
-      code: OperationCodeEnum.UPDATE_NOTIFICATION_HOURS,
-      description: "Update notification hours",
-    },
-    {
-      code: OperationCodeEnum.UPDATE_USER_NICKNAME,
-      description: "Update user nickname",
-    },
-
     // ROLE SECTION
     { code: OperationCodeEnum.GET_ROLES, description: "Get all roles" },
     { code: OperationCodeEnum.CREATE_ROLE, description: "Create new role" },

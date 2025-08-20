@@ -36,7 +36,7 @@ export class AuthService {
 
     const roleUser = await this.roleModel.findOne({ name: "user" });
 
-    const createdUser = await this.userModel.create({
+    await this.userModel.create({
       email: dto.email,
       firstname: dto.firstname,
       lastname: dto.lastname,

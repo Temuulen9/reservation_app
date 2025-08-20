@@ -12,6 +12,8 @@ import { UsersModule } from "./user/user.module";
 import { OperationModule } from "./operation/operation.module";
 import { SharedModule } from "./shared/shared.module";
 import { UserService } from "./user/user.service";
+import { OrganizationsModule } from "./organizations/organizations.module";
+import { BranchesModule } from "./branches/branches.module";
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { UserService } from "./user/user.service";
     RoleModule,
     OperationModule,
     SharedModule,
+    OrganizationsModule,
+    BranchesModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService, MongooseLoggerService, UserService],

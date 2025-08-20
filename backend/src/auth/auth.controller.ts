@@ -12,6 +12,7 @@ import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { JwtAuthGuard } from "./jwt/jwt-auth.guard";
+import { RefreshTokenDto } from "./dto/refresh-token.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -31,5 +32,11 @@ export class AuthController {
   @HttpCode(200)
   emailLogin(@Headers() headers, @Body() dto: LoginDto) {
     return this.authService.emailLogin(dto, headers);
+  }
+
+  @Post("refresh")
+  @HttpCode(200)
+  refreshAccessToken(@Headers() headers, @Body() dto: RefreshTokenDto) {
+    return this.authService.refreshAccessToken(dto.refreshToken, headers);
   }
 }

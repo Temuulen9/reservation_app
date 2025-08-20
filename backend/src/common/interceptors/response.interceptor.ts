@@ -8,9 +8,11 @@ import {
   InternalServerErrorException,
   HttpStatus,
   HttpException,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError } from "rxjs";
+import { JsonWebTokenError } from "@nestjs/jwt";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -35,10 +37,21 @@ export class ResponseInterceptor implements NestInterceptor {
         };
       }),
       catchError((error) => {
+        console.log(error);
         // Handle error responses with custom error structure
         const errorMessage = error.response?.message || "Internal Server Error";
         const errorDetails = error.response?.error || error;
 
+        if (error instanceof JsonWebTokenError) {
+          return throwError(
+            () =>
+              new UnauthorizedException({
+                statusCode: 401,
+                message: "Invalid or malformed token",
+                error: "Unauthorized",
+              })
+          );
+        }
         return throwError(
           () =>
             new HttpException(

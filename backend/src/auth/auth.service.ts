@@ -71,10 +71,56 @@ export class AuthService {
       operations: user.role.operations.map((op) => op?.code),
     };
 
-    const token = await this.jwtService.signAsync(payload);
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: "15m",
+      secret: process.env.JWT_ACCESS_SECRET,
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: "7d",
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
 
     return {
-      accessToken: token,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      email: user.email,
+    };
+  }
+
+  async refreshAccessToken(refreshToken: string, headers: any) {
+    const decodedToken = await this.jwtService.verifyAsync(refreshToken, {
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
+    const user = await this.userModel
+      .findOne({ _id: decodedToken.id })
+      .populate({ path: "role", populate: { path: "operations" } })
+      .exec();
+
+    if (!user) {
+      throw new UnauthorizedException("Invalid credentials");
+    }
+
+    const payload = {
+      id: user._id,
+      email: user.email,
+      role: user.role.name,
+      operations: user.role.operations.map((op) => op?.code),
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: "15m",
+      secret: process.env.JWT_ACCESS_SECRET,
+    });
+
+    const newRefreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: "7d",
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
+
+    return {
+      accessToken: accessToken,
+      refreshToken: newRefreshToken,
       email: user.email,
     };
   }

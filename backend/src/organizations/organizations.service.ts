@@ -20,12 +20,10 @@ export class OrganizationsService {
   ) {}
 
   async create(createOrganizationDto: CreateOrganizationDto) {
-    const isOrgExisting = await this.orgModel.findOne({
-      name: createOrganizationDto.name,
-    });
+    const isOrgExisting = await this.orgModel.findOne();
 
     if (isOrgExisting) {
-      throw new ConflictException("Organization already registered");
+      throw new ConflictException("Organization already exists");
     }
 
     const org = await this.orgModel.create({
@@ -36,11 +34,11 @@ export class OrganizationsService {
     return org.toJSON();
   }
 
-  async findOne(id: string) {
-    const org = await this.orgModel.findById(id);
+  async findOne() {
+    const org = await this.orgModel.findOne();
 
     if (!org) {
-      throw new NotFoundException("Organization not found");
+      throw new NotFoundException("Organization not exists");
     }
 
     return org.toJSON();

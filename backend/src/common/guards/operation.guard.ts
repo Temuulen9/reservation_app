@@ -4,21 +4,13 @@ import {
   ExecutionContext,
   Injectable,
   ForbiddenException,
-  HttpException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { OPERATION_CODE_KEY } from "../decorators/operation-code.decorator";
-import { InjectModel } from "@nestjs/mongoose";
-import { Role, RoleDocument } from "src/role/schemas/role.schema";
-import { Model } from "mongoose";
-import { RoleService } from "src/role/role.service";
 
 @Injectable()
 export class OperationGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private roleService: RoleService
-  ) {}
+  constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const operationCode = this.reflector.getAllAndOverride<string>(
